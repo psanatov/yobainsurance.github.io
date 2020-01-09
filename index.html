@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Каклькулятор компенсации страховых случаев</title>
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("input").focus();
+        String.prototype.hashCode = function() {
+          let hash = 0;
+          for (let i = 0; i < this.length; i++) {
+            const character = this.charCodeAt(i);
+            hash = (hash << 5) - hash + character;
+            hash = hash & hash; // Convert to 32bit integer
+          }
+          return hash;
+        };
+
+        const insuranceArr = [];
+        let premium = 0;
+        let chance = 100;
+
+        document
+          .getElementById("input")
+          .addEventListener("keyup", function(event) {
+            if (event.keyCode === 13) {
+              event.preventDefault();
+              document.getElementById("submit").click();
+            }
+          });
+
+        if (insuranceArr.length === 0) {
+          document.getElementById("items-box").style.cssText =
+            "display: none !important";
+        }
+
+        document.getElementById("submit").onclick = function process() {
+          insuranceArr.push(document.getElementById("input").value);
+          document.getElementById("input").value = "";
+          chance = 100 / insuranceArr.length;
+
+          insuranceArr.forEach(element => {
+            premium += Math.abs(element.hashCode());
+          });
+
+          let arrLength = insuranceArr.length;
+
+          if (insuranceArr.length === 1) {
+            arrLength = Math.pow(2, 2);
+          }
+
+          const someMath = Math.round(
+            Math.round(premium / arrLength) / Math.pow(arrLength, arrLength)
+          );
+
+          chance = Math.abs(Math.log10(arrLength / someMath));
+          premium = chance * Math.ceil(arrLength);
+
+          document.getElementById("premium").innerHTML =
+            premium.toFixed(2) + "&nbsp;$";
+          document.getElementById("chance").innerHTML =
+            chance.toFixed(2) + "&nbsp;%";
+
+          let itemsString = "";
+          insuranceArr.forEach(element => {
+            itemsString += `<li>${element}</li>`;
+          });
+
+          document.getElementById("items").innerHTML = itemsString;
+
+          if (insuranceArr.length !== 0) {
+            document.getElementById("items-box").style.cssText =
+              "display: block";
+          }
+
+          document.getElementById("input").focus();
+        };
+      });
+    </script>
+    <style>
+      * {
+        font-family: "Roboto", sans-serif;
+      }
+
+      html,
+      body {
+        margin: 0;
+      }
+
+      input {
+        padding: 0 !important;
+        border: 0;
+        color: black;
+        width: 100%;
+      }
+
+      input:focus {
+        outline: none;
+      }
+
+      button {
+        border: 2px solid black;
+        background-color: white;
+      }
+
+      .box {
+        margin: 1vmin;
+        padding: 1vmin;
+        border: 2px solid black;
+      }
+
+      /* colors */
+      .green {
+        background-color: #78c178;
+        color: white;
+      }
+
+      .blue {
+        background-color: cornflowerblue;
+        color: white;
+      }
+
+      .yellow {
+        background-color: #fffac9;
+        color: black;
+      }
+
+      .container {
+        max-width: 280px;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      #submit {
+        display: none;
+      }
+    </style>
+    <link rel="stylesheet" href="main.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="box green">
+        Сколько выплатят
+        <div id="premium" style="font-weight: bold;">0 $</div>
+      </div>
+      <div class="box blue">
+        Шанс того, что это пройзойдет
+        <div id="chance" style="font-weight: bold;">0 %</div>
+      </div>
+      <div class="box">
+        <input id="input" placeholder="Введите случай..." required />
+        <button type="submit" value="+" id="submit">+</button>
+      </div>
+      <div class="box yellow" id="items-box">
+        <ol id="items"></ol>
+      </div>
+    </div>
+  </body>
+</html>
